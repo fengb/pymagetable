@@ -36,7 +36,7 @@ class ImageTable(object):
                 for y in range(self.image.size[1]):
                     colors_count[self.pixels[x, y]] += 1
 
-            aliased_colors = sorted((c for (c, count) in colors_count.items() if count > 1), key=operator.itemgetter(1))
+            aliased_colors = sorted((c for (c, count) in colors_count.items() if count > 1), key=operator.itemgetter(1), reverse=True)
             classes = uniquebatches('abcdefghijklmnopqrstuvwxyz')
             self._color_classes = dict((c, next(classes)) for c in aliased_colors)
 
