@@ -10,6 +10,13 @@ def permutations(values):
     permutation using the passed in values.  INFINITE SERIES.
 
     Example:
+        >>> p = permutations('a')
+        >>> next(p)
+        'a'
+        >>> next(p)
+        'aa'
+        >>> next(p)
+        'aaa'
         >>> p = permutations('ab')
         >>> next(p)
         'a'
@@ -27,15 +34,19 @@ def permutations(values):
         'aaa'
     '''
     length = len(values)
-    for target in itertools.count():
-        ret = ''
-        if target >= length:
-            for x in reversed(range(1, int(math.log(target, length) + 1))):
-                ret += values[target / length**x - 1]
-                target %= length**x
-
-        yield ret + values[target]
-
+    chars = [0]
+    while True:
+        # reverse chars for more "human" generation
+        yield ''.join(values[c] for c in reversed(chars))
+        for (i, x) in enumerate(chars):
+            if x >= length-1:
+                chars[i] = 0
+            else:
+                chars[i] += 1
+                break
+        else:
+            # All characters were reset.  We need a bigger search space.
+            chars.append(0)
 
 
 class ImageTable(object):
