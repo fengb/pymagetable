@@ -5,16 +5,36 @@ import operator
 from PIL import Image
 
 
-def uniquebatches(supported):
-    length = len(supported)
+def permutations(values):
+    '''Return an iterator whose .next() method returns the next consecutive
+    permutation using the passed in values.  INFINITE SERIES.
+
+    Example:
+        >>> p = permutations('ab')
+        >>> next(p)
+        'a'
+        >>> next(p)
+        'b'
+        >>> next(p)
+        'aa'
+        >>> next(p)
+        'ab'
+        >>> next(p)
+        'ba'
+        >>> next(p)
+        'bb'
+        >>> next(p)
+        'aaa'
+    '''
+    length = len(values)
     for target in itertools.count():
         ret = ''
         if target >= length:
-            for x in reversed(range(1, math.log(target, length) + 1)):
-                ret += supported[target / length**x - 1]
+            for x in reversed(range(1, int(math.log(target, length) + 1))):
+                ret += values[target / length**x - 1]
                 target %= length**x
 
-        yield ret + supported[target]
+        yield ret + values[target]
 
 
 
@@ -37,7 +57,7 @@ class ImageTable(object):
                     colors_count[self.pixels[x, y]] += 1
 
             aliased_colors = sorted((c for (c, count) in colors_count.items() if count > 1), key=operator.itemgetter(1), reverse=True)
-            classes = uniquebatches('abcdefghijklmnopqrstuvwxyz')
+            classes = permutations('abcdefghijklmnopqrstuvwxyz')
             self._color_classes = dict((c, next(classes)) for c in aliased_colors)
 
         return self._color_classes
