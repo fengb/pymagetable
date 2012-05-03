@@ -49,6 +49,37 @@ def permutations(values):
             chars.append(0)
 
 
+def compressed_matrix(matrix):
+    '''A specialized matrix that compresses adjoining identical cells together.
+    Each element will contain (length, value)
+
+    Example:
+        >>> m = [[1, 2, 3],
+        ...      [4, 4, 4],
+        ...      [5, 5, 6]]
+        >>> lm = compressed_matrix(m)
+        >>> lm == [[(1, 1), (1, 2), (1, 3)],
+                   [(3, 4)],
+                   [(2, 5), (1, 6)]]
+        True
+    '''
+    new_matrix = []
+    for row in matrix:
+        new_row = []
+        length = 1
+        value = row[0]
+        for cell in row[1:]:
+            if cell == value:
+                length += 1
+            else:
+                new_row.append((length, value))
+                length = 1
+                value = cell
+        new_row.append((length, value))
+        new_matrix.append(new_row)
+    return new_matrix
+
+
 class ImageTable(object):
     def __init__(self, image, c='image'):
         self.image = image
