@@ -90,12 +90,12 @@ def values_sorted_by_frequency(matrix, key=lambda x:x, min=2):
 
 
 class ImageTable(object):
-    def __init__(self, image, c='image'):
-        self.image = image
-        self.pixels = self.image_to_matrix(image)
+    def __init__(self, pixel_matrix, c='image'):
+        self.pixel_matrix = pixel_matrix
         self.c = c
 
-    def image_to_matrix(self, image):
+    @classmethod
+    def pil_to_matrix(self, image):
         pixels = image.load()
         matrix = []
         for y in range(image.size[1]):
@@ -107,16 +107,20 @@ class ImageTable(object):
 
     @classmethod
     def from_file(cls, file, *args, **kwargs):
-        return cls(Image.open(file).convert('RGB'), *args, **kwargs)
+        matrix = cls.pil_to_matrix(Image.open(file).convert('RGB'))
+        return cls(matrix, *args, **kwargs)
 
     @property
     def color_classes(self):
         if not hasattr(self, '_color_classes'):
-            aliased_colors = values_sorted_by_frequency(self.pixels)
+            aliased_colors = values_sorted_by_frequency(self.pixel_matrix)
             classes = permutations('abcdefghijklmnopqrstuvwxyz')
             self._color_classes = dict((c, next(classes)) for c in aliased_colors)
 
         return self._color_classes
+
+    def width(self):
+        return len(self.pixel_matrix[0])
 
     def cellattr(self, cell):
         if cell in self.color_classes:
@@ -127,13 +131,13 @@ class ImageTable(object):
     def styles(self, fout):
         fout.write('''\
 p.%(class)s{width:%(width)s;}\
-p.%(class)s a{float:left;width:1px;height:1px;padding:0;margin:0}''' % {'class': self.c, 'width': self.image.size[0]})
+p.%(class)s a{float:left;width:1px;height:1px;padding:0;margin:0}''' % {'class': self.c, 'width': self.width()})
         for (color, cls) in self.color_classes.items():
             fout.write('p.%s .%s{background:#%02x%02x%02x}' % ((self.c, cls) + color))
 
     def main(self, fout):
         fout.write('<p class="%s">' % self.c)
-        for row in self.pixels:
+        for row in self.pixel_matrix:
             for cell in row:
                 fout.write('<a %s/>' % self.cellattr(cell))
         fout.write('</p>')
