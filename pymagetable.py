@@ -80,11 +80,30 @@ def compressed_matrix(matrix):
     return new_matrix
 
 
+def values_sorted_by_frequency(matrix, key=lambda x:x, min=2):
+    counter = collections.defaultdict(int)
+    for row in matrix:
+        for cell in row:
+            counter[key(cell)] += 1
+
+    return sorted((c for (c, count) in counter.items() if count >= min), key=operator.itemgetter(1), reverse=True)
+
+
 class ImageTable(object):
     def __init__(self, image, c='image'):
         self.image = image
-        self.pixels = image.load()
+        self.pixels = self.image_to_matrix(image)
         self.c = c
+
+    def image_to_matrix(self, image):
+        pixels = image.load()
+        matrix = []
+        for y in range(image.size[1]):
+            row = []
+            for x in range(image.size[0]):
+                row.append(pixels[x, y])
+            matrix.append(row)
+        return matrix
 
     @classmethod
     def from_file(cls, file, *args, **kwargs):
@@ -93,23 +112,17 @@ class ImageTable(object):
     @property
     def color_classes(self):
         if not hasattr(self, '_color_classes'):
-            colors_count = collections.defaultdict(int)
-            for x in range(self.image.size[0]):
-                for y in range(self.image.size[1]):
-                    colors_count[self.pixels[x, y]] += 1
-
-            aliased_colors = sorted((c for (c, count) in colors_count.items() if count > 1), key=operator.itemgetter(1), reverse=True)
+            aliased_colors = values_sorted_by_frequency(self.pixels)
             classes = permutations('abcdefghijklmnopqrstuvwxyz')
             self._color_classes = dict((c, next(classes)) for c in aliased_colors)
 
         return self._color_classes
 
-    def cellattr(self, x, y):
-        color = self.pixels[x, y]
-        if color in self.color_classes:
-            return 'class="%s"' % self.color_classes[color]
+    def cellattr(self, cell):
+        if cell in self.color_classes:
+            return 'class="%s"' % self.color_classes[cell]
         else:
-            return 'style="background:#%02x%02x%02x"' % color
+            return 'style="background:#%02x%02x%02x"' % cell
 
     def styles(self, fout):
         fout.write('''\
@@ -120,9 +133,9 @@ p.%(class)s a{float:left;width:1px;height:1px;padding:0;margin:0}''' % {'class':
 
     def main(self, fout):
         fout.write('<p class="%s">' % self.c)
-        for y in range(self.image.size[1]):
-            for x in range(self.image.size[0]):
-                fout.write('<a %s/>' % self.cellattr(x, y))
+        for row in self.pixels:
+            for cell in row:
+                fout.write('<a %s/>' % self.cellattr(cell))
         fout.write('</p>')
 
     def html(self, fout):
