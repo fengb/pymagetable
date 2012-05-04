@@ -80,13 +80,12 @@ def compressed_matrix(matrix):
     return new_matrix
 
 
-def values_sorted_by_frequency(matrix, key=lambda x:x, min=2):
+def values_sorted_by_frequency(list):
     counter = collections.defaultdict(int)
-    for row in matrix:
-        for cell in row:
-            counter[key(cell)] += 1
+    for e in list:
+        counter[e] += 1
 
-    return sorted((c for (c, count) in counter.items() if count >= min), key=operator.itemgetter(1), reverse=True)
+    return sorted((e for (e, count) in counter.items() if count >= 2), key=operator.itemgetter(1), reverse=True)
 
 
 class ImageTable(object):
@@ -113,7 +112,7 @@ class ImageTable(object):
     @property
     def color_classes(self):
         if not hasattr(self, '_color_classes'):
-            aliased_colors = values_sorted_by_frequency(self.pixel_matrix, key=operator.itemgetter(1))
+            aliased_colors = values_sorted_by_frequency(cell[1] for row in self.pixel_matrix for cell in row)
             classes = permutations('abcdefghijklmnopqrstuvwxyz')
             self._color_classes = dict((c, next(classes)) for c in aliased_colors)
 
