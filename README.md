@@ -1,8 +1,2 @@
-pymagetable
-===========
-Convert existing images into HTML.  This effectively circumvents all patent
-protection on raw image files and converts it for safe use on the web.
-
-usage
------
-    $ python pymagetable.py image.png > out.html
+This project is deprecated.  Future changes will be applied to the [Javascript
+port](https://github.com/fengb/image-html) instead.
